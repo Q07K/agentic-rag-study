@@ -1,11 +1,11 @@
 from fastapi import APIRouter
 
-app = APIRouter(
+router = APIRouter(
     prefix="/v1/vector",
     tags=["vector"],
 )
 
 
-@app.get("/")
+@router.get("/")
 def test():
     return None
