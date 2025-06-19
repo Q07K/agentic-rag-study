@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api import collections_router, vector_router
+from app.api import client, collections, vector
 from app.api.lifespan import lifespan
 
 app = FastAPI(
@@ -12,5 +12,6 @@ app = FastAPI(
 
 
 # Include Router
-app.include_router(router=vector_router.router)
-app.include_router(router=collections_router.router)
+app.include_router(router=client.router)
+app.include_router(router=vector.router)
+app.include_router(router=collections.router)
