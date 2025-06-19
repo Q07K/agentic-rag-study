@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
 router = APIRouter(
-    prefix="/v1/vector",
-    tags=["vector"],
+    prefix="/v1/vectors",
+    tags=["vectors"],
 )
 
 
