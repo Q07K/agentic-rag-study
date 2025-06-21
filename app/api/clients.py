@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app import crud
+from app.config import config
 from app.db.sqlite_session import get_db
+from app.schemas.clients import CreateClientRequest, CreateClientResponse
+from app.schemas.response import SuccessResponse
+from app.services.security import encrypt_value, generate_api_key
 
 router = APIRouter(
     prefix="/v1/clients",
@@ -10,16 +14,36 @@ router = APIRouter(
 )
 
 
-@router.post(path="/")
-def create_client(db: Session = Depends(dependency=get_db)):
+@router.post(path="/", response_model=SuccessResponse[CreateClientResponse])
+def create_client(
+    request: CreateClientRequest,
+    db: Session = Depends(dependency=get_db),
+) -> SuccessResponse[CreateClientResponse]:
+    clinet_id = generate_api_key()
+
+    encrypted_uri = encrypt_value(
+        value=request.uri,
+        key=config.encryption_key,
+    )
+    encrypted_token = encrypt_value(
+        value=request.token,
+        key=config.encryption_key,
+    )
+
     crud.clients.create_client(
         db=db,
-        client_id="example_api_key1",
-        user="example_user",
-        encrypted_uri="example_encrypted_uri",
-        encrypted_token="example_encrypted_token",
+        client_id=clinet_id,
+        user=request.user,
+        encrypted_uri=encrypted_uri,
+        encrypted_token=encrypted_token,
     )
-    return {"message": "Client created successfully"}
+    return SuccessResponse[CreateClientResponse](
+        code="client.created",
+        message="Client created successfully",
+        data=CreateClientResponse(
+            client_id=clinet_id,
+        ),
+    )
 
 
 @router.get(path="/{client_id}")
