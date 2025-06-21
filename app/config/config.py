@@ -8,10 +8,11 @@ class AppConfig(BaseSettings):
     )
 
     sqlite_db_path: str
+    encryption_key: bytes
 
 
 config = AppConfig()
 
 if __name__ == "__main__":
-    print(type(config.sqlite_db_path))
-    print(f"{config.sqlite_db_path = }")
+    print(type(config.encryption_key))
+    print(f"{config.encryption_key = }")
