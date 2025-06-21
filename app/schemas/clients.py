@@ -8,11 +8,10 @@ class CreateClientRequest(BaseModel):
 
 
 class CreateClientResponse(BaseModel):
-    message: str
     client_id: str
 
 
-class GetClientResponse(BaseModel):
+class ReadClientResponse(BaseModel):
     user: str
     client_id: str
 
