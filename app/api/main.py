@@ -1,6 +1,8 @@
+"""Agentic RAG API Main Application Module"""
+
 from fastapi import FastAPI
 
-from app.api import clients, collections, vectors
+from app.api import routers
 from app.api.lifespan import lifespan
 
 app = FastAPI(
@@ -12,6 +14,6 @@ app = FastAPI(
 
 
 # Include Router
-app.include_router(router=clients.router)
-app.include_router(router=vectors.router)
-app.include_router(router=collections.router)
+app.include_router(router=routers.clients.router)
+app.include_router(router=routers.vectors.router)
+app.include_router(router=routers.collections.router)
