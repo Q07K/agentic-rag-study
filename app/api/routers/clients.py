@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.config import config
 from app.db.sqlite_session import get_db
-from app.schemas.clients import CreateClientRequest, CreateClientResponse
+from app.schemas.clients import ClientRequest, ClientResponse
 from app.schemas.response import SuccessResponse
 from app.services.security import encrypt_value, generate_api_key
 
@@ -14,11 +14,11 @@ router = APIRouter(
 )
 
 
-@router.post(path="/", response_model=SuccessResponse[CreateClientResponse])
+@router.post(path="/", response_model=SuccessResponse[ClientResponse])
 def create_client(
-    request: CreateClientRequest,
+    request: ClientRequest,
     db: Session = Depends(dependency=get_db),
-) -> SuccessResponse[CreateClientResponse]:
+) -> SuccessResponse[ClientResponse]:
     clinet_id = generate_api_key()
 
     encrypted_uri = encrypt_value(
@@ -37,10 +37,10 @@ def create_client(
         encrypted_uri=encrypted_uri,
         encrypted_token=encrypted_token,
     )
-    return SuccessResponse[CreateClientResponse](
+    return SuccessResponse[ClientResponse](
         code="client.created",
         message="Client created successfully",
-        data=CreateClientResponse(
+        data=ClientResponse(
             client_id=clinet_id,
         ),
     )
@@ -51,12 +51,47 @@ def get_client(
     client_id: str,
     db: Session = Depends(dependency=get_db),
 ):
-    return crud.clients.get_client_by_client_id(db=db, client_id=client_id)
+    return crud.clients.read_client_by_client_id(db=db, client_id=client_id)
 
 
-@router.put(path="/{client_id}")
-def update_client():
-    pass
+@router.put(
+    path="/{client_id}", response_model=SuccessResponse[ClientResponse]
+)
+def update_client(
+    client_id: str,
+    request: ClientRequest,
+    db: Session = Depends(dependency=get_db),
+):
+    model = crud.clients.read_client_by_client_id(db=db, client_id=client_id)
+
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found",
+        )
+
+    encrypted_uri = encrypt_value(
+        value=request.uri,
+        key=config.encryption_key,
+    )
+    encrypted_token = encrypt_value(
+        value=request.token,
+        key=config.encryption_key,
+    )
+    crud.clients.update_client_by_client_id(
+        db=db,
+        client_id=client_id,
+        user=request.user,
+        encrypted_uri=encrypted_uri,
+        encrypted_token=encrypted_token,
+    )
+    return SuccessResponse[ClientResponse](
+        code="client.updated",
+        message="Client updated successfully",
+        data=ClientResponse(
+            client_id=client_id,
+        ),
+    )
 
 
 @router.delete(path="/{client_id}")
