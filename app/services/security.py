@@ -36,6 +36,16 @@ def decrypt_value(token: str, key: bytes) -> str:
 
 if __name__ == "__main__":
     # 함수를 호출하여 새로운 키를 생성합니다.
-    new_key = generate_api_key()
-    print(f"생성된 API 키: {new_key}")
-    print(f"키 길이 (접두사 포함): {len(new_key)}")
+    valid_key = Fernet.generate_key()
+
+    # 암호화 테스트
+    print(f"생성된 유효한 키: {valid_key.decode()}")
+    _encrypted = encrypt_value(value="example_value", key=valid_key)
+    _decrypted = decrypt_value(token=_encrypted, key=valid_key)
+
+    print(f"암호화된 값: {_encrypted}")
+    print(f"복호화된 값: {_decrypted}")
+
+    # API 키 생성 (Fernet 키와는 무관)
+    new_api_key = generate_api_key()
+    print(f"생성된 API 키: {new_api_key}")
