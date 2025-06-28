@@ -23,14 +23,14 @@ def generate_api_key(prefix: str = "kg_", nbytes: int = 32) -> str:
 
 
 def encrypt_value(value: str, key: bytes) -> str:
-    f = Fernet(key)
-    encrypted = f.encrypt(value.encode())
+    f = Fernet(key=key)
+    encrypted = f.encrypt(data=value.encode())
     return encrypted.decode()
 
 
 def decrypt_value(token: str, key: bytes) -> str:
-    f = Fernet(key)
-    decrypted = f.decrypt(token.encode())
+    f = Fernet(key=key)
+    decrypted = f.decrypt(token=token.encode())
     return decrypted.decode()
 
 
