@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.config import config
+from app.api.dependencies.auth import get_client_id_from_token
+from app.config import configs
 from app.db.sqlite_session import get_db
 from app.schemas.clients import ClientRequest, ClientResponse
 from app.schemas.response import SuccessResponse
@@ -16,24 +17,24 @@ router = APIRouter(
 
 @router.post(path="/", response_model=SuccessResponse[ClientResponse])
 def create_client(
-    request: ClientRequest,
+    body: ClientRequest,
     db: Session = Depends(dependency=get_db),
 ) -> SuccessResponse[ClientResponse]:
-    clinet_id = generate_api_key()
+    client_id = generate_api_key()
 
     encrypted_uri = encrypt_value(
-        value=request.uri,
-        key=config.encryption_key,
+        value=body.uri,
+        key=configs.encryption_key,
     )
     encrypted_token = encrypt_value(
-        value=request.token,
-        key=config.encryption_key,
+        value=body.token,
+        key=configs.encryption_key,
     )
 
     crud.clients.create_client(
         db=db,
-        client_id=clinet_id,
-        user=request.user,
+        client_id=client_id,
+        user=body.user,
         encrypted_uri=encrypted_uri,
         encrypted_token=encrypted_token,
     )
@@ -41,25 +42,36 @@ def create_client(
         code="client.created",
         message="Client created successfully",
         data=ClientResponse(
-            client_id=clinet_id,
+            client_id=client_id,
         ),
     )
 
 
-@router.get(path="/{client_id}")
+@router.get(path="/", response_model=SuccessResponse[ClientResponse])
 def get_client(
-    client_id: str,
+    client_id: str = Depends(dependency=get_client_id_from_token),
     db: Session = Depends(dependency=get_db),
 ):
-    return crud.clients.read_client_by_client_id(db=db, client_id=client_id)
+    model = crud.clients.read_client_by_client_id(db=db, client_id=client_id)
+
+    if not model:
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found",
+        )
+    return SuccessResponse[ClientResponse](
+        code="client.read",
+        message="Client read successfully",
+        data=ClientResponse(
+            client_id=client_id,
+        ),
+    )
 
 
-@router.put(
-    path="/{client_id}", response_model=SuccessResponse[ClientResponse]
-)
+@router.put(path="/", response_model=SuccessResponse[ClientResponse])
 def update_client(
-    client_id: str,
-    request: ClientRequest,
+    body: ClientRequest,
+    client_id: str = Depends(dependency=get_client_id_from_token),
     db: Session = Depends(dependency=get_db),
 ):
     model = crud.clients.read_client_by_client_id(db=db, client_id=client_id)
@@ -71,17 +83,17 @@ def update_client(
         )
 
     encrypted_uri = encrypt_value(
-        value=request.uri,
-        key=config.encryption_key,
+        value=body.uri,
+        key=configs.encryption_key,
     )
     encrypted_token = encrypt_value(
-        value=request.token,
-        key=config.encryption_key,
+        value=body.token,
+        key=configs.encryption_key,
     )
     crud.clients.update_client_by_client_id(
         db=db,
         client_id=client_id,
-        user=request.user,
+        user=body.user,
         encrypted_uri=encrypted_uri,
         encrypted_token=encrypted_token,
     )
@@ -94,9 +106,9 @@ def update_client(
     )
 
 
-@router.delete(path="/{client_id}")
+@router.delete(path="/")
 def delete_client(
-    client_id: str,
+    client_id: str = Depends(dependency=get_client_id_from_token),
     db: Session = Depends(dependency=get_db),
 ):
     return crud.clients.delete_client_by_client_id(
