@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.api.dependencies.auth import get_client_id_from_token
+from app.api.dependencies.auth_dependency import get_client_id_from_token
 from app.config import configs
 from app.db.sqlite_session import get_db
 from app.schemas.clients import ClientRequest, ClientResponse
