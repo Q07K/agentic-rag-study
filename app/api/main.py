@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 
 from app.api import routers
-from app.api.lifespan import lifespan
+from app.api.handlers.lifespan import lifespan
 
 app = FastAPI(
     title="Agentic RAG API",
