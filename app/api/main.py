@@ -1,8 +1,9 @@
 """Agentic RAG API Main Application Module"""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from app.api import routers
+from app.api.handlers.exception_handler import custom_exception_response
 from app.api.handlers.lifespan import lifespan
 
 app = FastAPI(
@@ -12,6 +13,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_exception_handler(
+    exc_class_or_status_code=HTTPException,
+    handler=custom_exception_response,
+)
 
 # Include Router
 app.include_router(router=routers.clients.router)
