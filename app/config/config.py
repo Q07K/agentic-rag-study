@@ -11,8 +11,7 @@ class AppConfig(BaseSettings):
     encryption_key: bytes
 
 
-config = AppConfig()
-
 if __name__ == "__main__":
+    config = AppConfig()
     print(type(config.encryption_key))
     print(f"{config.encryption_key = }")
