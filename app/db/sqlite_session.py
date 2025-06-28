@@ -4,9 +4,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from app.config import config
+from app.config import configs
 
-SQLITE_DB_URL = f"sqlite:///{config.sqlite_db_path}"
+SQLITE_DB_URL = f"sqlite:///{configs.sqlite_db_path}"
 
 engine = create_engine(
     url=SQLITE_DB_URL,
